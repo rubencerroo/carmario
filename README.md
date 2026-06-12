@@ -34,4 +34,12 @@ Las fotos se comprimen en el navegador (máx. 1200 px, WebP) antes de subirse, a
 
 ## Deploy
 
-Cada push a `main` despliega automáticamente en Cloudflare Pages (build: `npm run build`, output: `dist`).
+La app está en producción en **https://armario-ale.pages.dev** (Cloudflare Pages).
+
+Para publicar cambios:
+
+```bash
+npm run deploy
+```
+
+(compila y sube `dist` con wrangler; requiere `npx wrangler login` la primera vez)
