@@ -12,8 +12,45 @@ export interface Item {
   notes: string | null
   image_path: string | null
   favorite: boolean
+  status: string
+  status_note: string | null
+  price: number | null
+  purchased_at: string | null
   created_at: string
 }
+
+export interface Wish {
+  id: string
+  name: string
+  store: string | null
+  price: number | null
+  url: string | null
+  notes: string | null
+  image_path: string | null
+  created_at: string
+}
+
+export interface Trip {
+  id: string
+  name: string
+  start_date: string | null
+  end_date: string | null
+  notes: string | null
+  created_at: string
+  trip_items: { item_id: string; packed: boolean }[]
+  trip_extras: { id: string; name: string; packed: boolean }[]
+}
+
+export const DEFAULT_STATUS = 'En casa'
+
+export const STATUSES: { name: string; emoji: string }[] = [
+  { name: 'En casa', emoji: '🏠' },
+  { name: 'Lavadora', emoji: '🧺' },
+  { name: 'Tintorería', emoji: '🧼' },
+  { name: 'Prestada', emoji: '🤝' },
+  { name: 'En arreglos', emoji: '🪡' },
+  { name: 'Guardada (temporada)', emoji: '📦' },
+]
 
 export interface Outfit {
   id: string

@@ -8,6 +8,9 @@ import Layout from './components/Layout'
 import ItemsPage from './pages/ItemsPage'
 import OutfitsPage from './pages/OutfitsPage'
 import CalendarPage from './pages/CalendarPage'
+import WishlistPage from './pages/WishlistPage'
+import TripsPage from './pages/TripsPage'
+import StatsPage from './pages/StatsPage'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -40,6 +43,9 @@ export default function App() {
           <Route path="/belleza" element={<ItemsPage key="belleza" mode="belleza" />} />
           <Route path="/outfits" element={<OutfitsPage />} />
           <Route path="/calendario" element={<CalendarPage />} />
+          <Route path="/deseos" element={<WishlistPage />} />
+          <Route path="/maletas" element={<TripsPage />} />
+          <Route path="/stats" element={<StatsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

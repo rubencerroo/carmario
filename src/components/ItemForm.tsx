@@ -5,10 +5,12 @@ import { photoUrl } from '../lib/supabase'
 import type { Item, ItemKind } from '../lib/types'
 import {
   COLORS,
+  DEFAULT_STATUS,
   GARMENT_CATEGORIES,
   MAKEUP_CATEGORIES,
   PERFUME_CATEGORIES,
   SEASONS,
+  STATUSES,
 } from '../lib/types'
 import { Field, Modal, PhotoInput, TagInput, inputCls } from './ui'
 
@@ -37,6 +39,10 @@ export default function ItemForm({
   const [season, setSeason] = useState(existing?.season ?? '')
   const [tags, setTags] = useState<string[]>(existing?.tags ?? [])
   const [notes, setNotes] = useState(existing?.notes ?? '')
+  const [status, setStatus] = useState(existing?.status ?? DEFAULT_STATUS)
+  const [statusNote, setStatusNote] = useState(existing?.status_note ?? '')
+  const [price, setPrice] = useState(existing?.price != null ? String(existing.price) : '')
+  const [purchasedAt, setPurchasedAt] = useState(existing?.purchased_at ?? '')
   const [photo, setPhoto] = useState<Blob | null>(null)
   const [preview, setPreview] = useState<string | null>(photoUrl(existing?.image_path ?? null))
   const [busy, setBusy] = useState(false)
@@ -58,6 +64,10 @@ export default function ItemForm({
           tags,
           notes: notes.trim() || null,
           favorite: existing?.favorite ?? false,
+          status,
+          status_note: status === DEFAULT_STATUS ? null : statusNote.trim() || null,
+          price: price.trim() ? Number(price.replace(',', '.')) : null,
+          purchased_at: purchasedAt || null,
         },
         photo,
         existing,
@@ -167,6 +177,54 @@ export default function ItemForm({
           </Field>
           <Field label="Etiquetas">
             <TagInput tags={tags} onChange={setTags} />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="¿Dónde está?">
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className={inputCls}
+            >
+              {STATUSES.map((s) => (
+                <option key={s.name} value={s.name}>
+                  {s.emoji} {s.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          {status !== DEFAULT_STATUS ? (
+            <Field label="Detalle">
+              <input
+                value={statusNote}
+                onChange={(e) => setStatusNote(e.target.value)}
+                placeholder={status === 'Prestada' ? '¿A quién?' : '¿Dónde?'}
+                className={inputCls}
+              />
+            </Field>
+          ) : (
+            <div />
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Precio (€)">
+            <input
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              inputMode="decimal"
+              placeholder="29,95"
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Fecha de compra">
+            <input
+              type="date"
+              value={purchasedAt}
+              onChange={(e) => setPurchasedAt(e.target.value)}
+              className={inputCls}
+            />
           </Field>
         </div>
 

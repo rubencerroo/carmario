@@ -1,7 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useStore } from '../lib/store'
 import type { Item, ItemKind } from '../lib/types'
-import { GARMENT_CATEGORIES, MAKEUP_CATEGORIES, PERFUME_CATEGORIES } from '../lib/types'
+import {
+  DEFAULT_STATUS,
+  GARMENT_CATEGORIES,
+  MAKEUP_CATEGORIES,
+  PERFUME_CATEGORIES,
+} from '../lib/types'
 import ItemCard from '../components/ItemCard'
 import ItemForm from '../components/ItemForm'
 import { Chip, EmptyState, inputCls } from '../components/ui'
@@ -16,6 +21,7 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
   const [onlyFavs, setOnlyFavs] = useState(false)
+  const [onlyAway, setOnlyAway] = useState(false)
   const [editing, setEditing] = useState<Item | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -32,8 +38,9 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
       if (i.kind !== kind) return false
       if (category && i.category !== category) return false
       if (onlyFavs && !i.favorite) return false
+      if (onlyAway && i.status === DEFAULT_STATUS) return false
       if (q) {
-        const hay = [i.name, i.brand, i.color, i.category, i.season, ...i.tags, i.notes]
+        const hay = [i.name, i.brand, i.color, i.category, i.season, i.status, i.status_note, ...i.tags, i.notes]
           .filter(Boolean)
           .join(' ')
           .toLowerCase()
@@ -41,7 +48,7 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
       }
       return true
     })
-  }, [items, kind, category, onlyFavs, search])
+  }, [items, kind, category, onlyFavs, onlyAway, search])
 
   const usedCategories = useMemo(
     () => categories.filter((c) => items.some((i) => i.kind === kind && i.category === c)),
@@ -97,12 +104,24 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
       />
 
       <div className="mb-5 flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
-        <Chip active={!category && !onlyFavs} onClick={() => { setCategory(''); setOnlyFavs(false) }}>
+        <Chip
+          active={!category && !onlyFavs && !onlyAway}
+          onClick={() => {
+            setCategory('')
+            setOnlyFavs(false)
+            setOnlyAway(false)
+          }}
+        >
           Todo
         </Chip>
         <Chip active={onlyFavs} onClick={() => setOnlyFavs(!onlyFavs)}>
           ⭐ Favoritos
         </Chip>
+        {items.some((i) => i.kind === kind && i.status !== DEFAULT_STATUS) && (
+          <Chip active={onlyAway} onClick={() => setOnlyAway(!onlyAway)}>
+            📍 Fuera de casa
+          </Chip>
+        )}
         {usedCategories.map((c) => (
           <Chip key={c} active={category === c} onClick={() => setCategory(category === c ? '' : c)}>
             {c}

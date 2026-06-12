@@ -1,7 +1,7 @@
 import { useStore } from '../lib/store'
 import { photoUrl } from '../lib/supabase'
 import type { Item } from '../lib/types'
-import { COLORS } from '../lib/types'
+import { COLORS, DEFAULT_STATUS, STATUSES } from '../lib/types'
 import { FavStar } from './ui'
 
 const KIND_ICON: Record<Item['kind'], string> = {
@@ -22,6 +22,8 @@ export default function ItemCard({
   const { toggleItemFavorite } = useStore()
   const url = photoUrl(item.image_path)
   const colorHex = COLORS.find((c) => c.name === item.color)?.hex
+  const away = item.status !== DEFAULT_STATUS
+  const statusEmoji = STATUSES.find((s) => s.name === item.status)?.emoji ?? '📍'
 
   return (
     <button
@@ -46,6 +48,14 @@ export default function ItemCard({
           <div className="absolute top-2 left-2 flex h-7 w-7 items-center justify-center rounded-full bg-blush-700 text-sm text-white">
             ✓
           </div>
+        )}
+        {away && (
+          <span
+            className="absolute bottom-2 left-2 flex max-w-[85%] items-center gap-1 truncate rounded-full bg-black/55 px-2.5 py-1 text-[11px] text-white backdrop-blur"
+            title={item.status_note ?? item.status}
+          >
+            {statusEmoji} {item.status_note || item.status}
+          </span>
         )}
       </div>
       <div className="p-3">
