@@ -4,7 +4,7 @@ import { useStore } from '../lib/store'
 import { photoUrl } from '../lib/supabase'
 import type { Trip } from '../lib/types'
 import ItemCard from '../components/ItemCard'
-import { Chip, EmptyState, Field, Modal, inputCls } from '../components/ui'
+import { Chip, ConfirmDialog, EmptyState, Field, Modal, inputCls } from '../components/ui'
 
 function formatRange(trip: Trip): string | null {
   if (!trip.start_date) return null
@@ -22,6 +22,7 @@ function TripForm({ existing, onClose }: { existing?: Trip; onClose: () => void 
   const [end, setEnd] = useState(existing?.end_date ?? '')
   const [notes, setNotes] = useState(existing?.notes ?? '')
   const [busy, setBusy] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -44,7 +45,6 @@ function TripForm({ existing, onClose }: { existing?: Trip; onClose: () => void 
 
   async function handleDelete() {
     if (!existing) return
-    if (!confirm(`¿Eliminar la maleta "${existing.name}"?`)) return
     setBusy(true)
     try {
       await deleteTrip(existing)
@@ -87,7 +87,7 @@ function TripForm({ existing, onClose }: { existing?: Trip; onClose: () => void 
           {existing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirming(true)}
               disabled={busy}
               className="rounded-xl px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
             >
@@ -103,6 +103,15 @@ function TripForm({ existing, onClose }: { existing?: Trip; onClose: () => void 
           </button>
         </div>
       </form>
+      {confirming && existing && (
+        <ConfirmDialog
+          title={`¿Eliminar "${existing.name}"?`}
+          message="Se borrará la maleta; tus prendas no se tocan."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </Modal>
   )
 }

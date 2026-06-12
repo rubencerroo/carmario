@@ -22,3 +22,26 @@ export async function compressImage(file: File, maxSize = 1200, quality = 0.82):
   if (!blob) throw new Error('No se pudo procesar la imagen')
   return blob
 }
+
+/**
+ * Quita el fondo de la imagen con IA, todo dentro del navegador (la primera vez
+ * descarga el modelo, ~40 MB, que queda cacheado). Devuelve WebP con transparencia.
+ */
+export async function removeBg(blob: Blob): Promise<Blob> {
+  const { removeBackground } = await import('@imgly/background-removal')
+  const cutout = await removeBackground(blob)
+
+  // Re-encode a WebP conservando la transparencia para que siga ocupando poco
+  const bitmap = await createImageBitmap(cutout)
+  const canvas = document.createElement('canvas')
+  canvas.width = bitmap.width
+  canvas.height = bitmap.height
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0)
+  bitmap.close()
+
+  const webp = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, 'image/webp', 0.85),
+  )
+  if (!webp) throw new Error('No se pudo procesar la imagen')
+  return webp
+}

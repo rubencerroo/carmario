@@ -5,7 +5,7 @@ import { photoUrl } from '../lib/supabase'
 import type { Outfit } from '../lib/types'
 import { OCCASIONS, SEASONS } from '../lib/types'
 import ItemCard from './ItemCard'
-import { Chip, EmptyState, Field, Modal, PhotoInput, TagInput, inputCls } from './ui'
+import { Chip, ConfirmDialog, EmptyState, Field, Modal, PhotoInput, TagInput, inputCls } from './ui'
 
 const PICKER_TABS = [
   { kind: 'prenda', label: '👚 Prendas' },
@@ -35,6 +35,7 @@ export default function OutfitForm({
   const [tab, setTab] = useState<(typeof PICKER_TABS)[number]['kind']>('prenda')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
   const tabItems = useMemo(() => items.filter((i) => i.kind === tab), [items, tab])
 
@@ -74,13 +75,13 @@ export default function OutfitForm({
 
   async function handleDelete() {
     if (!existing) return
-    if (!confirm(`¿Eliminar el outfit "${existing.name}"?`)) return
     setBusy(true)
     try {
       await deleteOutfit(existing)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar')
+      setConfirming(false)
       setBusy(false)
     }
   }
@@ -181,7 +182,7 @@ export default function OutfitForm({
           {existing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirming(true)}
               disabled={busy}
               className="rounded-xl px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
             >
@@ -197,6 +198,15 @@ export default function OutfitForm({
           </button>
         </div>
       </form>
+      {confirming && existing && (
+        <ConfirmDialog
+          title={`¿Eliminar "${existing.name}"?`}
+          message="El outfit se borrará; las prendas se quedan en tu armario."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </Modal>
   )
 }

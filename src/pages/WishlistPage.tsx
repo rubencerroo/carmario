@@ -4,7 +4,7 @@ import { useStore } from '../lib/store'
 import { photoUrl } from '../lib/supabase'
 import type { Wish } from '../lib/types'
 import { GARMENT_CATEGORIES, MAKEUP_CATEGORIES, PERFUME_CATEGORIES } from '../lib/types'
-import { EmptyState, Field, Modal, PhotoInput, inputCls } from '../components/ui'
+import { ConfirmDialog, EmptyState, Field, Modal, PhotoInput, inputCls } from '../components/ui'
 
 function formatPrice(n: number | null): string | null {
   if (n == null) return null
@@ -22,6 +22,7 @@ function WishForm({ existing, onClose }: { existing?: Wish; onClose: () => void 
   const [preview, setPreview] = useState<string | null>(photoUrl(existing?.image_path ?? null))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -48,13 +49,13 @@ function WishForm({ existing, onClose }: { existing?: Wish; onClose: () => void 
 
   async function handleDelete() {
     if (!existing) return
-    if (!confirm(`¿Eliminar "${existing.name}" de la lista de deseos?`)) return
     setBusy(true)
     try {
       await deleteWish(existing)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar')
+      setConfirming(false)
       setBusy(false)
     }
   }
@@ -122,7 +123,7 @@ function WishForm({ existing, onClose }: { existing?: Wish; onClose: () => void 
           {existing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirming(true)}
               disabled={busy}
               className="rounded-xl px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
             >
@@ -138,6 +139,15 @@ function WishForm({ existing, onClose }: { existing?: Wish; onClose: () => void 
           </button>
         </div>
       </form>
+      {confirming && existing && (
+        <ConfirmDialog
+          title={`¿Eliminar "${existing.name}"?`}
+          message="Se quitará de la lista de deseos."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </Modal>
   )
 }

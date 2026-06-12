@@ -12,7 +12,7 @@ import {
   SEASONS,
   STATUSES,
 } from '../lib/types'
-import { Field, Modal, PhotoInput, TagInput, inputCls } from './ui'
+import { ConfirmDialog, Field, Modal, PhotoInput, TagInput, inputCls } from './ui'
 
 function categoriesFor(kind: ItemKind): readonly string[] {
   if (kind === 'prenda') return GARMENT_CATEGORIES
@@ -47,6 +47,7 @@ export default function ItemForm({
   const [preview, setPreview] = useState<string | null>(photoUrl(existing?.image_path ?? null))
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -81,13 +82,13 @@ export default function ItemForm({
 
   async function handleDelete() {
     if (!existing) return
-    if (!confirm(`¿Eliminar "${existing.name}"? Esta acción no se puede deshacer.`)) return
     setBusy(true)
     try {
       await deleteItem(existing)
       onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al eliminar')
+      setConfirming(false)
       setBusy(false)
     }
   }
@@ -244,7 +245,7 @@ export default function ItemForm({
           {existing && (
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirming(true)}
               disabled={busy}
               className="rounded-xl px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 disabled:opacity-50"
             >
@@ -260,6 +261,15 @@ export default function ItemForm({
           </button>
         </div>
       </form>
+      {confirming && existing && (
+        <ConfirmDialog
+          title={`¿Eliminar "${existing.name}"?`}
+          message="Esta acción no se puede deshacer."
+          busy={busy}
+          onConfirm={handleDelete}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </Modal>
   )
 }
