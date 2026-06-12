@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blush-50: #faf7f5;
+  --color-blush-100: #f5ece8;
+  --color-blush-200: #ecd9d2;
+  --color-blush-300: #ddbcb1;
+  --color-blush-400: #c99a8c;
+  --color-blush-500: #b67e6e;
+  --color-blush-600: #a26654;
+  --color-blush-700: #875245;
+  --color-blush-800: #6f463c;
+  --color-blush-900: #5c3c35;
+  --font-display: "Georgia", "Times New Roman", serif;
+}
+
+html {
+  background-color: var(--color-blush-50);
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #3d3330;
+  -webkit-font-smoothing: antialiased;
+}
+
+::placeholder {
+  color: #b8a8a1;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.5;
+}
