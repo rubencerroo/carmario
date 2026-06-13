@@ -41,6 +41,16 @@ export interface Trip {
   trip_extras: { id: string; name: string; packed: boolean }[]
 }
 
+export interface Usage {
+  db_bytes: number
+  storage_bytes: number
+}
+
+// Límites del plan gratuito de Supabase
+export const DB_LIMIT_BYTES = 500 * 1024 * 1024 // 500 MB
+export const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024 // 1 GB
+export const USAGE_WARN_RATIO = 0.8
+
 export const DEFAULT_STATUS = 'En casa'
 
 export const STATUSES: { name: string; emoji: string }[] = [

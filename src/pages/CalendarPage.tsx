@@ -141,22 +141,22 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-2xl text-blush-800 md:text-3xl">Calendario</h2>
-        <div className="flex items-center gap-1">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="font-display shrink-0 text-2xl text-blush-800 md:text-3xl">Calendario</h2>
+        <div className="flex min-w-0 items-center gap-1">
           <button
             onClick={() => shift(-1)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-blush-500 hover:bg-blush-100"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-blush-500 hover:bg-blush-100"
             aria-label="Mes anterior"
           >
             ‹
           </button>
-          <span className="w-44 text-center font-medium text-blush-700">
+          <span className="min-w-0 flex-1 truncate text-center text-sm font-medium text-blush-700 md:w-44 md:flex-none md:text-base">
             {MONTHS[month]} {year}
           </span>
           <button
             onClick={() => shift(1)}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-blush-500 hover:bg-blush-100"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-blush-500 hover:bg-blush-100"
             aria-label="Mes siguiente"
           >
             ›

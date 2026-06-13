@@ -2,6 +2,46 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useStore } from '../lib/store'
+import { DB_LIMIT_BYTES, STORAGE_LIMIT_BYTES, USAGE_WARN_RATIO } from '../lib/types'
+
+/** Aviso cuando la base de datos o las fotos se acercan al límite del plan gratuito. */
+function UsageBanner() {
+  const { usage } = useStore()
+  const [dismissed, setDismissed] = useState(false)
+  if (!usage || dismissed) return null
+
+  const warnings: string[] = []
+  const storagePct = usage.storage_bytes / STORAGE_LIMIT_BYTES
+  const dbPct = usage.db_bytes / DB_LIMIT_BYTES
+  if (storagePct >= USAGE_WARN_RATIO)
+    warnings.push(`las fotos ocupan el ${Math.round(storagePct * 100)}% del espacio gratuito`)
+  if (dbPct >= USAGE_WARN_RATIO)
+    warnings.push(`la base de datos está al ${Math.round(dbPct * 100)}% de su capacidad`)
+  if (warnings.length === 0) return null
+
+  const critical = storagePct >= 0.95 || dbPct >= 0.95
+  return (
+    <div
+      className={`flex items-start gap-3 px-4 py-3 text-sm md:px-8 ${
+        critical ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-800'
+      }`}
+    >
+      <span>⚠️</span>
+      <p className="flex-1">
+        Atención: {warnings.join(' y ')}. Borra fotos o prendas que ya no uses, o consulta el
+        apartado Estadísticas para ver el detalle.
+      </p>
+      <button
+        onClick={() => setDismissed(true)}
+        className="shrink-0 opacity-60 hover:opacity-100"
+        aria-label="Cerrar aviso"
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
 
 const NAV = [
   { to: '/', label: 'Armario', icon: '👚' },
@@ -65,7 +105,10 @@ export default function Layout({ children }: { children: ReactNode }) {
         </button>
       </header>
 
-      <main className="min-w-0 flex-1 p-4 pb-24 md:p-8 md:pb-8">{children}</main>
+      <div className="min-w-0 flex-1">
+        <UsageBanner />
+        <main className="p-4 pb-24 md:p-8 md:pb-8">{children}</main>
+      </div>
 
       {/* Menú "Más" móvil */}
       {moreOpen && (

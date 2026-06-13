@@ -2,11 +2,37 @@ import { useMemo } from 'react'
 import { useStore } from '../lib/store'
 import { photoUrl } from '../lib/supabase'
 import type { Item } from '../lib/types'
-import { COLORS } from '../lib/types'
+import { COLORS, DB_LIMIT_BYTES, STORAGE_LIMIT_BYTES, USAGE_WARN_RATIO } from '../lib/types'
 import { EmptyState } from '../components/ui'
 
 function euros(n: number): string {
   return `${n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} €`
+}
+
+function megas(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toLocaleString('es-ES', { maximumFractionDigits: 1 })} MB`
+}
+
+function UsageBar({ label, used, limit }: { label: string; used: number; limit: number }) {
+  const pct = Math.min(1, used / limit)
+  const color =
+    pct >= 0.95 ? 'bg-red-400' : pct >= USAGE_WARN_RATIO ? 'bg-amber-400' : 'bg-blush-300'
+  return (
+    <div>
+      <div className="mb-1 flex justify-between text-xs text-blush-500">
+        <span>{label}</span>
+        <span>
+          {megas(used)} de {megas(limit)} ({Math.round(pct * 100)}%)
+        </span>
+      </div>
+      <div className="h-3 overflow-hidden rounded-full bg-blush-50">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${Math.max(2, pct * 100)}%` }}
+        />
+      </div>
+    </div>
+  )
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
@@ -38,7 +64,7 @@ function MiniItem({ item, detail }: { item: Item; detail: string }) {
 }
 
 export default function StatsPage() {
-  const { items, outfits, entries, error } = useStore()
+  const { items, outfits, entries, usage, error } = useStore()
 
   const stats = useMemo(() => {
     // Cada día del calendario con outfit cuenta un uso para cada pieza del outfit
@@ -190,6 +216,18 @@ export default function StatsPage() {
                   {c.cat} <strong className="text-blush-800">{c.count}</strong>
                 </span>
               ))}
+            </div>
+          </Card>
+        )}
+        {usage && (
+          <Card title="💾 Espacio usado (plan gratuito)">
+            <div className="space-y-3">
+              <UsageBar label="📷 Fotos" used={usage.storage_bytes} limit={STORAGE_LIMIT_BYTES} />
+              <UsageBar label="🗄️ Base de datos" used={usage.db_bytes} limit={DB_LIMIT_BYTES} />
+              <p className="text-xs text-blush-400">
+                Si alguna barra se acerca al máximo, borra fotos o cosas que ya no uses. Con la
+                compresión automática caben miles de prendas, así que tranquila 😉
+              </p>
             </div>
           </Card>
         )}

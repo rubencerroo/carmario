@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase, uploadPhoto, deletePhoto } from './supabase'
-import type { CalendarEntry, Item, Outfit, Trip, Wish } from './types'
+import type { CalendarEntry, Item, Outfit, Trip, Usage, Wish } from './types'
 
 interface ItemInput {
   kind: Item['kind']
@@ -44,6 +44,7 @@ interface Store {
   entries: CalendarEntry[]
   wishes: Wish[]
   trips: Trip[]
+  usage: Usage | null
   loading: boolean
   error: string | null
   saveItem: (input: ItemInput, photo: Blob | null, existing?: Item) => Promise<void>
@@ -85,6 +86,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<CalendarEntry[]>([])
   const [wishes, setWishes] = useState<Wish[]>([])
   const [trips, setTrips] = useState<Trip[]>([])
+  const [usage, setUsage] = useState<Usage | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -114,6 +116,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setTrips((t.data as Trip[]) ?? [])
     }
     setLoading(false)
+    // El uso de espacio es informativo: si falla no bloquea la app
+    const { data: usageData } = await supabase.rpc('get_usage')
+    if (usageData) setUsage(usageData as Usage)
   }, [])
 
   useEffect(() => {
@@ -383,6 +388,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         entries,
         wishes,
         trips,
+        usage,
         loading,
         error,
         saveItem,
