@@ -52,6 +52,7 @@ const BASE_NAV = [
   { to: '/deseos', label: 'Deseos', icon: '🛍️' },
   { to: '/maletas', label: 'Maletas', icon: '🧳' },
   { to: '/stats', label: 'Estadísticas', icon: '📊' },
+  { to: '/cuenta', label: 'Mi cuenta', icon: '👤' },
 ]
 
 const ADMIN_NAV = { to: '/admin', label: 'Admin', icon: '🛠️' }

@@ -9,9 +9,42 @@ import {
 } from '../lib/types'
 import ItemCard from '../components/ItemCard'
 import ItemForm from '../components/ItemForm'
+import DayEditor from '../components/DayEditor'
+import { photoUrl } from '../lib/supabase'
 import { Chip, EmptyState, inputCls } from '../components/ui'
 
 type Mode = 'armario' | 'belleza'
+
+/** Atajo en la home: ver/poner el outfit de hoy en un toque. */
+function TodayCard() {
+  const { outfits, entries } = useStore()
+  const today = new Date().toISOString().slice(0, 10)
+  const [open, setOpen] = useState(false)
+  const entry = entries.find((e) => e.date === today)
+  const outfit = entry?.outfit_id ? outfits.find((o) => o.id === entry.outfit_id) : undefined
+  const cover = outfit ? photoUrl(outfit.image_path) : null
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="mb-4 flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left shadow-sm ring-1 ring-blush-100 transition hover:shadow-md"
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-blush-100 text-xl">
+          {cover ? <img src={cover} alt="" className="h-full w-full object-cover" /> : '📅'}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-blush-400">Hoy me pongo…</p>
+          <p className="truncate text-sm font-medium text-blush-800">
+            {outfit ? outfit.name : entry?.notes ? entry.notes : 'Apunta tu outfit de hoy'}
+          </p>
+        </div>
+        <span className="shrink-0 text-blush-300">›</span>
+      </button>
+      {open && <DayEditor date={today} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
 
 export default function ItemsPage({ mode }: { mode: Mode }) {
   const { items, loading, error } = useStore()
@@ -72,6 +105,8 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
           + Añadir
         </button>
       </div>
+
+      {mode === 'armario' && <TodayCard />}
 
       {mode === 'belleza' && (
         <div className="mb-4 flex gap-2">

@@ -93,17 +93,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const loadAll = useCallback(async () => {
     setError(null)
+    // Filtramos SIEMPRE por el usuario actual. Es imprescindible para la cuenta
+    // admin, que por sus políticas puede leer las filas de todos: sin este filtro
+    // su propio Armario/Estadísticas mezclaría los datos de los demás usuarios.
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setLoading(false)
+      return
+    }
+    const uid = user.id
     const [i, o, c, w, t] = await Promise.all([
-      supabase.from('items').select('*').order('created_at', { ascending: false }),
+      supabase.from('items').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
       supabase
         .from('outfits')
         .select('*, outfit_items(item_id)')
+        .eq('user_id', uid)
         .order('created_at', { ascending: false }),
-      supabase.from('calendar_entries').select('*'),
-      supabase.from('wishes').select('*').order('created_at', { ascending: false }),
+      supabase.from('calendar_entries').select('*').eq('user_id', uid),
+      supabase.from('wishes').select('*').eq('user_id', uid).order('created_at', { ascending: false }),
       supabase
         .from('trips')
         .select('*, trip_items(item_id, packed), trip_extras(id, name, packed)')
+        .eq('user_id', uid)
         .order('created_at', { ascending: false }),
     ])
     const err = i.error ?? o.error ?? c.error ?? w.error ?? t.error

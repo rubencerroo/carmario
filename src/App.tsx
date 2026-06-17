@@ -14,6 +14,7 @@ import WishlistPage from './pages/WishlistPage'
 import TripsPage from './pages/TripsPage'
 import StatsPage from './pages/StatsPage'
 import AdminPage from './pages/AdminPage'
+import AccountPage from './pages/AccountPage'
 import { Terms, Privacy } from './pages/Legal'
 
 export default function App() {
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/deseos" element={<WishlistPage />} />
           <Route path="/maletas" element={<TripsPage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/cuenta" element={<AccountPage />} />
           {isAdmin && <Route path="/admin" element={<AdminPage />} />}
           {legalRoutes}
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -157,7 +157,7 @@ export function PhotoInput({
           disabled={cutBusy}
           className="w-full rounded-xl bg-blush-100 py-2 text-xs font-medium text-blush-700 transition hover:bg-blush-200 disabled:opacity-60"
         >
-          {cutBusy ? '✂️ Quitando fondo… (la 1ª vez tarda un poco)' : '✂️ Quitar fondo'}
+          {cutBusy ? '✂️ Quitando fondo…' : '✂️ Quitar fondo'}
         </button>
       )}
       {cut && (

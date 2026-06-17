@@ -88,6 +88,11 @@ export default function StatsPage() {
       .sort((a, b) => b.uses - a.uses)
     const top = used.filter((u) => u.uses > 0).slice(0, 5)
     const forgotten = used.filter((u) => u.uses === 0)
+    // Puestas, pero pocas veces (las candidatas a usar más o replantearse)
+    const leastUsed = used
+      .filter((u) => u.uses > 0)
+      .sort((a, b) => a.uses - b.uses)
+      .slice(0, 5)
 
     const colorCounts = COLORS.map((c) => ({
       ...c,
@@ -99,7 +104,9 @@ export default function StatsPage() {
       .map((cat) => ({ cat, count: garments.filter((g) => g.category === cat).length }))
       .sort((a, b) => b.count - a.count)
 
-    return { uses, garments, totalValue, daysLogged, top, forgotten, colorCounts, maxColor, categoryCounts }
+    const wornCount = used.filter((u) => u.uses > 0).length
+
+    return { uses, garments, totalValue, daysLogged, top, forgotten, leastUsed, wornCount, colorCounts, maxColor, categoryCounts }
   }, [items, outfits, entries])
 
   if (error) return <EmptyState icon="⚠️" text={`Error al cargar los datos: ${error}`} />
@@ -171,6 +178,23 @@ export default function StatsPage() {
             <div className="space-y-2.5">
               {stats.forgotten.slice(0, 5).map(({ item }) => (
                 <MiniItem key={item.id} item={item} detail={item.category} />
+              ))}
+            </div>
+          </Card>
+        )}
+
+        {stats.leastUsed.length > 0 && stats.wornCount > 5 && (
+          <Card title="🥶 Las que menos usas">
+            <p className="mb-3 text-xs text-blush-400">
+              Las llevas, pero poco. ¿Les das más juego o te replanteas si compensan?
+            </p>
+            <div className="space-y-2.5">
+              {stats.leastUsed.map(({ item, uses }) => (
+                <MiniItem
+                  key={item.id}
+                  item={item}
+                  detail={`${uses} ${uses === 1 ? 'uso' : 'usos'}`}
+                />
               ))}
             </div>
           </Card>

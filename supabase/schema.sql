@@ -254,3 +254,17 @@ as $$
   limit greatest(1, least(coalesce(p_limit, 200), 1000));
 $$;
 grant execute on function public.admin_logs(int, uuid, text) to authenticated;
+
+-- Permite al usuario borrar su propia cuenta (RGPD). El cascade elimina todos sus datos.
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
