@@ -15,10 +15,17 @@ function OutfitCard({ outfit, onClick }: { outfit: Outfit; onClick: () => void }
   const thumbs = pieces.slice(0, 4)
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="group overflow-hidden rounded-2xl bg-white text-left shadow-sm transition hover:shadow-md"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      className="group cursor-pointer overflow-hidden rounded-2xl bg-white text-left shadow-sm transition hover:shadow-md"
     >
       <div className="relative aspect-square bg-blush-100">
         {cover ? (
@@ -50,7 +57,7 @@ function OutfitCard({ outfit, onClick }: { outfit: Outfit; onClick: () => void }
           {outfit.occasion ? ` · ${outfit.occasion}` : ''}
         </p>
       </div>
-    </button>
+    </div>
   )
 }
 

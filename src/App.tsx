@@ -14,6 +14,7 @@ import WishlistPage from './pages/WishlistPage'
 import TripsPage from './pages/TripsPage'
 import StatsPage from './pages/StatsPage'
 import AdminPage from './pages/AdminPage'
+import { Terms, Privacy } from './pages/Legal'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -44,7 +45,21 @@ export default function App() {
     )
   }
 
-  if (!session) return <Login />
+  // Páginas legales accesibles siempre (con o sin sesión).
+  const legalRoutes = (
+    <>
+      <Route path="/terminos" element={<Terms />} />
+      <Route path="/privacidad" element={<Privacy />} />
+    </>
+  )
+
+  if (!session)
+    return (
+      <Routes>
+        {legalRoutes}
+        <Route path="*" element={<Login />} />
+      </Routes>
+    )
 
   const isAdmin = session.user.email?.toLowerCase() === ADMIN_EMAIL
 
@@ -60,6 +75,7 @@ export default function App() {
           <Route path="/maletas" element={<TripsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           {isAdmin && <Route path="/admin" element={<AdminPage />} />}
+          {legalRoutes}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

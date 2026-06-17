@@ -26,10 +26,17 @@ export default function ItemCard({
   const statusEmoji = STATUSES.find((s) => s.name === item.status)?.emoji ?? '📍'
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className={`group overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-blush-600 transition hover:shadow-md ${
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onClick()
+        }
+      }}
+      className={`group cursor-pointer overflow-hidden rounded-2xl bg-white text-left shadow-sm ring-blush-600 transition hover:shadow-md ${
         selected ? 'ring-3' : ''
       }`}
     >
@@ -77,6 +84,6 @@ export default function ItemCard({
           </span>
         </div>
       </div>
-    </button>
+    </div>
   )
 }

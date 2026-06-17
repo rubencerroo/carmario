@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, ReactNode } from 'react'
-import { compressImage, removeBg } from '../lib/image'
+import { compressImage, removeBg, preloadBgModel } from '../lib/image'
 
 export function Modal({
   title,
@@ -91,6 +91,8 @@ export function PhotoInput({
       const url = URL.createObjectURL(blob)
       setOrig({ blob, url })
       onChange(blob, url)
+      // Calienta el modelo de IA en segundo plano por si pulsa "Quitar fondo".
+      preloadBgModel()
     } finally {
       setBusy(false)
       e.target.value = ''

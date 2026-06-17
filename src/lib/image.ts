@@ -23,13 +23,39 @@ export async function compressImage(file: File, maxSize = 1200, quality = 0.82):
   return blob
 }
 
+// Modelo de IA para quitar fondo. 'isnet_fp16' pesa la mitad que el modelo por
+// defecto ('isnet', ~40 MB) con calidad muy similar, así que descarga e inicializa
+// bastante más rápido la primera vez. Queda cacheado para siguientes usos.
+const BG_CONFIG = { model: 'isnet_fp16' } as const
+
+let preloadStarted = false
+
+/**
+ * Empieza a descargar el modelo en segundo plano. Se llama en cuanto el usuario
+ * elige una foto (es muy probable que luego pulse "Quitar fondo"), de modo que
+ * al pulsar el modelo ya esté listo y la operación sea casi instantánea.
+ * No bloquea ni lanza errores: es solo un calentamiento.
+ */
+export function preloadBgModel() {
+  if (preloadStarted) return
+  preloadStarted = true
+  ;(async () => {
+    try {
+      const { preload } = await import('@imgly/background-removal')
+      await preload(BG_CONFIG)
+    } catch {
+      preloadStarted = false // si falla, permitir reintento más adelante
+    }
+  })()
+}
+
 /**
  * Quita el fondo de la imagen con IA, todo dentro del navegador (la primera vez
- * descarga el modelo, ~40 MB, que queda cacheado). Devuelve WebP con transparencia.
+ * descarga el modelo, que queda cacheado). Devuelve WebP con transparencia.
  */
 export async function removeBg(blob: Blob): Promise<Blob> {
   const { removeBackground } = await import('@imgly/background-removal')
-  const cutout = await removeBackground(blob)
+  const cutout = await removeBackground(blob, BG_CONFIG)
 
   // Re-encode a WebP conservando la transparencia para que siga ocupando poco
   const bitmap = await createImageBitmap(cutout)
