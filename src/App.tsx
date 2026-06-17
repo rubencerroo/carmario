@@ -64,9 +64,25 @@ export default function App() {
 
   const isAdmin = session.user.email?.toLowerCase() === ADMIN_EMAIL
 
+  // El admin no usa Carmario como armario personal: solo ve el panel y su cuenta.
+  if (isAdmin) {
+    return (
+      <StoreProvider>
+        <Layout isAdmin>
+          <Routes>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/cuenta" element={<AccountPage />} />
+            {legalRoutes}
+            <Route path="*" element={<Navigate to="/admin" replace />} />
+          </Routes>
+        </Layout>
+      </StoreProvider>
+    )
+  }
+
   return (
     <StoreProvider>
-      <Layout isAdmin={isAdmin}>
+      <Layout>
         <Routes>
           <Route path="/" element={<ItemsPage key="armario" mode="armario" />} />
           <Route path="/belleza" element={<ItemsPage key="belleza" mode="belleza" />} />
@@ -76,7 +92,6 @@ export default function App() {
           <Route path="/maletas" element={<TripsPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/cuenta" element={<AccountPage />} />
-          {isAdmin && <Route path="/admin" element={<AdminPage />} />}
           {legalRoutes}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

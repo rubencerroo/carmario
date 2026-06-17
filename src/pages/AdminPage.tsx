@@ -1,7 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase, photoUrl } from '../lib/supabase'
 import { Chip, EmptyState } from '../components/ui'
-import type { ActivityLog, AdminUser, Item, Outfit, Wish } from '../lib/types'
+import {
+  DB_LIMIT_BYTES,
+  STORAGE_LIMIT_BYTES,
+  type ActivityLog,
+  type AdminUser,
+  type Item,
+  type Outfit,
+  type Usage,
+  type Wish,
+} from '../lib/types'
 
 function fmt(date: string | null): string {
   if (!date) return '—'
@@ -16,6 +25,14 @@ function fmt(date: string | null): string {
 
 function euro(n: number): string {
   return n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })
+}
+
+function mb(bytes: number): string {
+  return `${(bytes / (1024 * 1024)).toLocaleString('es-ES', { maximumFractionDigits: 0 })} MB`
+}
+
+function pct(used: number, limit: number): number {
+  return Math.round((used / limit) * 100)
 }
 
 interface UserData {
@@ -44,7 +61,10 @@ export default function AdminPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([])
   const [logLevel, setLogLevel] = useState<'all' | 'info' | 'warn' | 'error'>('all')
 
-  // Carga el resumen de usuarios
+  const [usage, setUsage] = useState<Usage | null>(null)
+  const [errorCount, setErrorCount] = useState(0)
+
+  // Carga el resumen de usuarios, el uso de espacio del proyecto y los errores
   useEffect(() => {
     supabase
       .rpc('admin_users')
@@ -53,6 +73,12 @@ export default function AdminPage() {
         else setUsers((data as AdminUser[]) ?? [])
         setLoading(false)
       })
+    supabase.rpc('get_usage').then(({ data }) => {
+      if (data) setUsage(data as Usage)
+    })
+    supabase
+      .rpc('admin_logs', { p_limit: 1000, p_user: null, p_level: 'error' })
+      .then(({ data }) => setErrorCount((data as ActivityLog[] | null)?.length ?? 0))
   }, [])
 
   // Carga los logs (global o del usuario seleccionado, filtrados por nivel)
@@ -103,15 +129,42 @@ export default function AdminPage() {
     )
 
   const totalItems = users.reduce((s, u) => s + u.items, 0)
+  const totalOutfits = users.reduce((s, u) => s + u.outfits, 0)
+  // Usuarios activos en los últimos 7 días (según su última actividad registrada)
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const activeWeek = users.filter((u) => u.last_activity && new Date(u.last_activity).getTime() > weekAgo).length
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl text-blush-800">🛠️ Panel de administración</h1>
-        <span className="text-sm text-blush-400">
-          {users.length} usuarios · {totalItems} prendas en total
-        </span>
-      </div>
+      <h1 className="font-display text-2xl text-blush-800">🛠️ Panel de administración</h1>
+
+      {/* Resumen global */}
+      <section className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <StatBox label="Usuarios" value={users.length} />
+        <StatBox label="Activos (7 días)" value={activeWeek} />
+        <StatBox label="Prendas totales" value={totalItems} />
+        <StatBox label="Outfits totales" value={totalOutfits} />
+        <StatBox
+          label={`Fotos${usage ? ` (${pct(usage.storage_bytes, STORAGE_LIMIT_BYTES)}%)` : ''}`}
+          value={usage ? mb(usage.storage_bytes) : '…'}
+        />
+        <StatBox
+          label={`BD${usage ? ` (${pct(usage.db_bytes, DB_LIMIT_BYTES)}%)` : ''}`}
+          value={usage ? mb(usage.db_bytes) : '…'}
+        />
+      </section>
+
+      {errorCount > 0 && (
+        <button
+          onClick={() => {
+            setSelected(null)
+            setLogLevel('error')
+          }}
+          className="flex w-full items-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-left text-sm text-red-700 ring-1 ring-red-100 transition hover:bg-red-100"
+        >
+          🔴 <strong>{errorCount}</strong> {errorCount === 1 ? 'error registrado' : 'errores registrados'}. Toca para verlos.
+        </button>
+      )}
 
       {/* Lista de usuarios */}
       <section>

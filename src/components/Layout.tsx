@@ -55,13 +55,17 @@ const BASE_NAV = [
   { to: '/cuenta', label: 'Mi cuenta', icon: '👤' },
 ]
 
-const ADMIN_NAV = { to: '/admin', label: 'Admin', icon: '🛠️' }
+// El admin no tiene armario propio: su menú es solo el panel y su cuenta.
+const ADMIN_NAV = [
+  { to: '/admin', label: 'Panel', icon: '🛠️' },
+  { to: '/cuenta', label: 'Mi cuenta', icon: '👤' },
+]
 
 export default function Layout({ children, isAdmin }: { children: ReactNode; isAdmin?: boolean }) {
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
 
-  const nav = isAdmin ? [...BASE_NAV, ADMIN_NAV] : BASE_NAV
+  const nav = isAdmin ? ADMIN_NAV : BASE_NAV
   // En móvil caben 4 secciones + un menú "Más" con el resto
   const mobileMain = nav.slice(0, 4)
   const mobileMore = nav.slice(4)
