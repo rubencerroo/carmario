@@ -219,7 +219,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (date: string, outfitId: string | null, notes: string | null) => {
       const { error } = await supabase
         .from('calendar_entries')
-        .upsert({ date, outfit_id: outfitId, notes }, { onConflict: 'date' })
+        .upsert({ date, outfit_id: outfitId, notes }, { onConflict: 'user_id,date' })
       if (error) throw error
       await loadAll()
     },

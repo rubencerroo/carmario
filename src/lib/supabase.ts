@@ -5,9 +5,6 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string
 
 export const supabase = createClient(url, anonKey)
 
-/** Email fijo del único usuario de la app (el login solo pide contraseña). */
-export const APP_EMAIL = import.meta.env.VITE_APP_EMAIL as string
-
 const BUCKET = 'photos'
 
 export function photoUrl(path: string | null): string | null {
@@ -16,7 +13,10 @@ export function photoUrl(path: string | null): string | null {
 }
 
 export async function uploadPhoto(blob: Blob): Promise<string> {
-  const path = `${crypto.randomUUID()}.webp`
+  // Cada usuario sube a su propia carpeta (user_id/uuid.webp); las políticas RLS lo exigen.
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('No hay sesión activa')
+  const path = `${user.id}/${crypto.randomUUID()}.webp`
   const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
     contentType: 'image/webp',
     cacheControl: '31536000',

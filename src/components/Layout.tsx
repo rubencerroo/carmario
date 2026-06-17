@@ -67,7 +67,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Sidebar escritorio */}
       <aside className="hidden w-56 shrink-0 flex-col border-r border-blush-200 bg-white p-5 md:flex md:sticky md:top-0 md:h-dvh">
         <h1 className="font-display mb-8 flex items-center gap-2 text-2xl text-blush-800">
-          <span>👗</span> Mi Armario
+          <span>👗</span> Carmario
         </h1>
         <nav className="flex flex-col gap-1">
           {NAV.map((n) => (
@@ -98,7 +98,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       {/* Cabecera móvil */}
       <header className="flex items-center justify-between border-b border-blush-200 bg-white px-5 py-3 md:hidden">
         <h1 className="font-display flex items-center gap-2 text-xl text-blush-800">
-          <span>👗</span> Mi Armario
+          <span>👗</span> Carmario
         </h1>
         <button onClick={() => supabase.auth.signOut()} className="text-sm text-blush-400">
           Salir
