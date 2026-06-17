@@ -111,7 +111,7 @@ export default function OutfitsPage() {
         className={`${inputCls} mb-3`}
       />
 
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-5 flex flex-wrap gap-2">
         <Chip active={!occasion && !onlyFavs} onClick={() => { setOccasion(''); setOnlyFavs(false) }}>
           Todo
         </Chip>

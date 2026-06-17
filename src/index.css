@@ -18,6 +18,13 @@ html {
   background-color: var(--color-blush-50);
 }
 
+/* Nunca debe haber scroll horizontal: red de seguridad por si algún contenido se pasa de ancho. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   color: #3d3330;

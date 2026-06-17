@@ -217,14 +217,14 @@ export default function AdminPage() {
         {logs.length === 0 ? (
           <EmptyState icon="📋" text="Sin registros para este filtro" />
         ) : (
-          <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-blush-100">
-            <table className="w-full text-left text-xs">
+          <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-blush-100">
+            <table className="w-full table-fixed text-left text-xs">
               <thead className="border-b border-blush-100 text-blush-400">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Fecha</th>
-                  <th className="px-3 py-2 font-medium">Usuario</th>
-                  <th className="px-3 py-2 font-medium">Acción</th>
-                  <th className="px-3 py-2 font-medium">Detalle</th>
+                  <th className="w-[22%] px-3 py-2 font-medium">Fecha</th>
+                  <th className="w-[26%] px-3 py-2 font-medium">Usuario</th>
+                  <th className="w-[22%] px-3 py-2 font-medium">Acción</th>
+                  <th className="w-[30%] px-3 py-2 font-medium">Detalle</th>
                 </tr>
               </thead>
               <tbody>
@@ -235,13 +235,13 @@ export default function AdminPage() {
                       l.level === 'error' ? 'bg-red-50' : l.level === 'warn' ? 'bg-amber-50' : ''
                     }`}
                   >
-                    <td className="px-3 py-2 whitespace-nowrap text-blush-500">{fmt(l.created_at)}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-blush-500">{l.email ?? '—'}</td>
-                    <td className="px-3 py-2 whitespace-nowrap font-medium text-blush-800">
+                    <td className="px-3 py-2 align-top text-blush-500">{fmt(l.created_at)}</td>
+                    <td className="px-3 py-2 align-top break-words text-blush-500">{l.email ?? '—'}</td>
+                    <td className="px-3 py-2 align-top break-words font-medium text-blush-800">
                       {l.level === 'error' ? '🔴 ' : l.level === 'warn' ? '🟡 ' : ''}
                       {l.action}
                     </td>
-                    <td className="px-3 py-2 text-blush-400">
+                    <td className="px-3 py-2 align-top break-words text-blush-400">
                       {l.path && <span className="mr-1 text-blush-300">{l.path}</span>}
                       {l.details ? JSON.stringify(l.details) : ''}
                     </td>

@@ -7,17 +7,12 @@ export default function Login() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [accepted, setAccepted] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    if (mode === 'signup' && !accepted) {
-      setError('Debes aceptar los términos y la política de privacidad')
-      return
-    }
     setBusy(true)
     setError(null)
     setInfo(null)
@@ -79,38 +74,22 @@ export default function Login() {
           className="mt-3 w-full rounded-xl border border-blush-200 bg-blush-50 px-4 py-3 outline-none focus:border-blush-400"
         />
 
-        {isSignup && (
-          <label className="mt-3 flex items-start gap-2 text-xs text-blush-500">
-            <input
-              type="checkbox"
-              checked={accepted}
-              onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-0.5 accent-blush-600"
-            />
-            <span>
-              Acepto los{' '}
-              <Link to="/terminos" className="text-blush-600 underline">
-                términos
-              </Link>{' '}
-              y la{' '}
-              <Link to="/privacidad" className="text-blush-600 underline">
-                política de privacidad
-              </Link>
-              .
-            </span>
-          </label>
-        )}
-
         {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
         {info && <p className="mt-2 text-sm text-green-600">{info}</p>}
 
         <button
           type="submit"
-          disabled={busy || !email || !password || (isSignup && !accepted)}
+          disabled={busy || !email || !password}
           className="mt-4 w-full rounded-xl bg-blush-600 py-3 font-medium text-white transition hover:bg-blush-700 disabled:opacity-50"
         >
           {busy ? 'Un momento…' : isSignup ? 'Crear cuenta' : 'Entrar'}
         </button>
+
+        {isSignup && (
+          <p className="mt-3 text-center text-xs text-blush-300">
+            Al crear la cuenta aceptas los términos y la política de privacidad.
+          </p>
+        )}
 
         <button
           type="button"

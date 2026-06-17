@@ -103,7 +103,7 @@ export default function ItemsPage({ mode }: { mode: Mode }) {
         className={`${inputCls} mb-3`}
       />
 
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch]">
+      <div className="mb-5 flex flex-wrap gap-2">
         <Chip
           active={!category && !onlyFavs && !onlyAway}
           onClick={() => {
