@@ -157,3 +157,100 @@ $$;
 
 revoke execute on function public.get_usage() from public, anon;
 grant execute on function public.get_usage() to authenticated;
+
+-- ===================== Admin y registro de actividad =====================
+
+-- Admin: el usuario cuyo email coincide con el del administrador ve todo.
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(
+    (select lower(email) = 'ruben.cerro.diaz@gmail.com' from auth.users where id = auth.uid()),
+    false
+  );
+$$;
+grant execute on function public.is_admin() to authenticated;
+
+-- Registro de actividad: toda acción y error de los usuarios, para depurar.
+create table public.activity_logs (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users (id) on delete set null default auth.uid(),
+  action text not null,
+  level text not null default 'info' check (level in ('info', 'warn', 'error')),
+  details jsonb,
+  path text,
+  created_at timestamptz not null default now()
+);
+create index on public.activity_logs (created_at desc);
+create index on public.activity_logs (user_id, created_at desc);
+create index on public.activity_logs (level) where level <> 'info';
+
+alter table public.activity_logs enable row level security;
+create policy "insert own logs" on public.activity_logs
+  for insert to authenticated with check (user_id = auth.uid());
+create policy "read own or admin" on public.activity_logs
+  for select to authenticated using (user_id = auth.uid() or public.is_admin());
+
+-- El admin puede LEER (no editar) todas las filas de cada tabla.
+create policy "admin read all" on public.items for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.outfits for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.outfit_items for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.calendar_entries for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.wishes for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.trips for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.trip_items for select to authenticated using (public.is_admin());
+create policy "admin read all" on public.trip_extras for select to authenticated using (public.is_admin());
+
+-- Resumen de usuarios (solo admin). auth.users no es accesible desde el cliente.
+create or replace function public.admin_users()
+returns table (
+  id uuid, email text, created_at timestamptz, last_sign_in timestamptz,
+  items bigint, outfits bigint, wishes bigint, trips bigint, last_activity timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select
+    u.id, u.email, u.created_at, u.last_sign_in_at,
+    (select count(*) from public.items i where i.user_id = u.id),
+    (select count(*) from public.outfits o where o.user_id = u.id),
+    (select count(*) from public.wishes w where w.user_id = u.id),
+    (select count(*) from public.trips t where t.user_id = u.id),
+    (select max(l.created_at) from public.activity_logs l where l.user_id = u.id)
+  from auth.users u
+  where public.is_admin()
+  order by u.created_at;
+$$;
+grant execute on function public.admin_users() to authenticated;
+
+-- Logs enriquecidos con el email (solo admin), opcionalmente filtrados por usuario/nivel.
+create or replace function public.admin_logs(
+  p_limit int default 200,
+  p_user uuid default null,
+  p_level text default null
+)
+returns table (
+  id bigint, user_id uuid, email text, action text, level text,
+  details jsonb, path text, created_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select l.id, l.user_id, u.email, l.action, l.level, l.details, l.path, l.created_at
+  from public.activity_logs l
+  left join auth.users u on u.id = l.user_id
+  where public.is_admin()
+    and (p_user is null or l.user_id = p_user)
+    and (p_level is null or l.level = p_level)
+  order by l.created_at desc
+  limit greatest(1, least(coalesce(p_limit, 200), 1000));
+$$;
+grant execute on function public.admin_logs(int, uuid, text) to authenticated;

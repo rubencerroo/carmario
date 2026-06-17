@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { logActivity } from '../lib/log'
 import { useStore } from '../lib/store'
 import { DB_LIMIT_BYTES, STORAGE_LIMIT_BYTES, USAGE_WARN_RATIO } from '../lib/types'
 
@@ -43,7 +44,7 @@ function UsageBanner() {
   )
 }
 
-const NAV = [
+const BASE_NAV = [
   { to: '/', label: 'Armario', icon: '👚' },
   { to: '/belleza', label: 'Belleza', icon: '💄' },
   { to: '/outfits', label: 'Outfits', icon: '✨' },
@@ -53,14 +54,22 @@ const NAV = [
   { to: '/stats', label: 'Estadísticas', icon: '📊' },
 ]
 
-// En móvil caben 4 secciones + un menú "Más" con el resto
-const MOBILE_MAIN = NAV.slice(0, 4)
-const MOBILE_MORE = NAV.slice(4)
+const ADMIN_NAV = { to: '/admin', label: 'Admin', icon: '🛠️' }
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default function Layout({ children, isAdmin }: { children: ReactNode; isAdmin?: boolean }) {
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
-  const moreActive = MOBILE_MORE.some((n) => n.to === location.pathname)
+
+  const nav = isAdmin ? [...BASE_NAV, ADMIN_NAV] : BASE_NAV
+  // En móvil caben 4 secciones + un menú "Más" con el resto
+  const mobileMain = nav.slice(0, 4)
+  const mobileMore = nav.slice(4)
+  const moreActive = mobileMore.some((n) => n.to === location.pathname)
+
+  // Registra cada página visitada (qué usan los usuarios en cada momento).
+  useEffect(() => {
+    logActivity('page.view', { path: location.pathname })
+  }, [location.pathname])
 
   return (
     <div className="min-h-dvh md:flex">
@@ -70,7 +79,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <span>👗</span> Carmario
         </h1>
         <nav className="flex flex-col gap-1">
-          {NAV.map((n) => (
+          {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
@@ -88,7 +97,10 @@ export default function Layout({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() => {
+            logActivity('auth.logout')
+            supabase.auth.signOut()
+          }}
           className="mt-auto rounded-xl px-4 py-2 text-left text-sm text-blush-400 hover:bg-blush-50"
         >
           Cerrar sesión
@@ -100,7 +112,13 @@ export default function Layout({ children }: { children: ReactNode }) {
         <h1 className="font-display flex items-center gap-2 text-xl text-blush-800">
           <span>👗</span> Carmario
         </h1>
-        <button onClick={() => supabase.auth.signOut()} className="text-sm text-blush-400">
+        <button
+          onClick={() => {
+            logActivity('auth.logout')
+            supabase.auth.signOut()
+          }}
+          className="text-sm text-blush-400"
+        >
           Salir
         </button>
       </header>
@@ -117,7 +135,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+5rem)]"
             onClick={(e) => e.stopPropagation()}
           >
-            {MOBILE_MORE.map((n) => (
+            {mobileMore.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
@@ -137,7 +155,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Barra inferior móvil */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-blush-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
-        {MOBILE_MAIN.map((n) => (
+        {mobileMain.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}

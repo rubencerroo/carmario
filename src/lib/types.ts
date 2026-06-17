@@ -46,6 +46,32 @@ export interface Usage {
   storage_bytes: number
 }
 
+/** Email con permisos de administrador (ve todos los armarios, estadísticas y logs). */
+export const ADMIN_EMAIL = 'ruben.cerro.diaz@gmail.com'
+
+export interface AdminUser {
+  id: string
+  email: string
+  created_at: string
+  last_sign_in: string | null
+  items: number
+  outfits: number
+  wishes: number
+  trips: number
+  last_activity: string | null
+}
+
+export interface ActivityLog {
+  id: number
+  user_id: string | null
+  email: string | null
+  action: string
+  level: 'info' | 'warn' | 'error'
+  details: Record<string, unknown> | null
+  path: string | null
+  created_at: string
+}
+
 // Límites del plan gratuito de Supabase
 export const DB_LIMIT_BYTES = 500 * 1024 * 1024 // 500 MB
 export const STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024 // 1 GB
