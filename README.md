@@ -54,3 +54,7 @@ npm run deploy
 ```
 
 (compila y sube `dist` con wrangler; requiere `npx wrangler login` la primera vez)
+
+## Licencia
+
+[AGPL-3.0](LICENSE). Es obligatoria porque la app usa `@imgly/background-removal`, que tiene esa licencia.
